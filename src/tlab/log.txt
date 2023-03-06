@@ -1,0 +1,6 @@
+Data has been output in console
+Its five(5)
+Data has been output in file
+Data has been output in console
+Its five(5)
+Data has been output in file
