@@ -1,122 +1,497 @@
 package sixlab;
 /*
             2211
-            1)Фигура
-            2) Задается в коде УО количество
-            3)Выпадающий список с выбором цвета
-            4) Выпадающий список с названиями для выбора фигурки
-            5)6 скоростей из выпадающего списка
-            6)Способо выбора фигуры из выпадающего списка
-            7)Присвоение номера фигурки вручную из УО
             8)Возможность смены номера фигуры из уо
-            9)Регулировка скорости перемещения фигурки из УО
-            10) Без изменений размера окон
 
          */
+
 import java.util.*;
-import java.util.LinkedList;
 import java.awt.*;
 import java.awt.event.*;
-public class Test {
-    static int count;
-    public static void main(String[] args){
-        count = 0;
-        Balls balls = new Balls();
+
+
+class OurWindowAdapter extends WindowAdapter {
+
+    public void windowClosing (WindowEvent wE) {
+        System.exit (0);
     }
 }
-class Balls extends Frame implements Observer, ActionListener, ItemListener {
-    private LinkedList LL = new LinkedList();
-    private Color col;
-    private Frame f;
-    private Button b;
-    private Choice c;
-    private TextField tf;
-    Balls(){
-        this.addWindowListener(new WindowAdapter2());
-        f = new Frame();
-        f.setSize(new Dimension(300,100));
-        f.setTitle("Контроль");
-        f.setLayout(new GridLayout());
-        f.addWindowListener(new WindowAdapter2());
-        b = new Button("Пуск");
-        b.setSize(new Dimension(10,40));
-        b.setActionCommand("OK");
-        b.addActionListener(this);
-        f.add(b, new Point(20,20));
-        c = new Choice();
-        c.addItem("Синий");
-        c.addItem("Зелёный");
-        c.addItem("Красный");
-        c.addItem("Чёрный");c.addItem("Жёлтый");
-        c.addItemListener(this);
-        f.add(c, new Point(60,20));
-        tf = new TextField();
-        f.add(tf);
-        f.setVisible(true);
-        this.setSize(500,200);
-        this.setVisible(true);
-        this.setLocation(100, 150);
+
+class Frames extends Frame {
+
+    int count = 0; //количество фигур
+    int numbers[];	//id
+
+    java.util.List<Figure> figures = new ArrayList<Figure>(); //список фигур
+
+    Frame childFrame ; // Дочерняя форма
+    Canvas cnv;
+    Label numberLab, objectLab, speedLab, objectLabForChange, speedLabForChange, colorLab,idLabForChange, idLabForChangeNew;
+    TextField numberTB, speedTB, objectIdForChangeNew;
+    Choice colorTB, figureTB;
+    Button addBut, changeBut, changeButId;
+    Choice objectChForAdd, objectChForChange, speedCh, objectIdForChange;
+    Color color;
+
+
+    Frames() {
+
+        this.setTitle("PiPiPoPo");
+        this.setSize (360, 400);
+
+        numbers = new int [15];
+        for (int i = 0; i < 10; i ++)
+            numbers[i] = -1;
+
+        numberLab = new Label("Номер: ");
+        objectLab = new Label("Объект: ");
+        speedLab = new Label("Скорость: ");
+        objectLabForChange = new Label("Объект: ");
+        speedLabForChange = new Label("Скорость: ");
+        colorLab = new Label("Цвет: ");
+        idLabForChange = new Label("ID");
+        idLabForChangeNew = new Label("New ID");
+
+        numberTB = new TextField();
+        numberTB.setText("1");
+        speedTB = new TextField();
+        speedTB.setText("1");
+        colorTB = new Choice();
+        colorTB.addItem("Красный");
+        colorTB.addItem("Оранжевый");
+        colorTB.addItem("Синий");
+        colorTB.addItem("Белый");
+        colorTB.addItem("Черный");
+        figureTB = new Choice();
+        figureTB.addItem("круг");
+        figureTB.addItem("квадрат");
+
+
+        addBut = new Button("Добавить");
+        changeBut = new Button("Изменить");
+        changeButId = new Button("Изменить ID");
+
+
+        objectChForChange = new Choice();
+
+        speedCh = new Choice();
+        speedCh.addItem("1");
+        speedCh.addItem("2");
+        speedCh.addItem("3");
+        speedCh.addItem("4");
+        speedCh.addItem("5");
+
+        objectIdForChange = new Choice();
+        objectIdForChangeNew = new TextField();
+
+        cnv = new Canvas() {
+            public void paint(Graphics g) {
+                //
+            }
+        };
+
+
+        //интерфейс УО
+        GridBagConstraints gbc = new GridBagConstraints();
+        this.setLayout (new GridBagLayout());
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 0;
+        this.add (numberLab, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 0;
+        this.add (numberTB, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 1;
+        this.add (objectLab, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 1;
+        this.add (figureTB, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 2;
+        this.add (colorLab, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 2;
+        this.add (colorTB, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 3;
+        this.add (speedLab, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 3;
+        this.add (speedTB, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;  gbc.gridy = 4;
+        gbc.gridwidth = 3;
+        this.add (addBut, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        this.add (new Label(""), gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 6;
+        this.add (objectLabForChange, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 6;
+        this.add (objectChForChange, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 7;
+        this.add (speedLabForChange, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 7;
+        this.add (speedCh, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        this.add (changeBut, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1;
+        this.add (new Label(""), gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 10;
+        this.add (idLabForChange, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 10;
+        this.add (objectIdForChange, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 11;
+        this.add (idLabForChangeNew, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.gridy = 11;
+        this.add (objectIdForChangeNew, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        this.add (changeButId, gbc);
+
+
+        addBut.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent aE) {
+                AddButFunc();
+            }
+        });
+
+        changeBut.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent aE) {
+                ChangeButFunc();
+            }
+        });
+
+        changeButId.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent aE) {
+                ChangeIdFunc();
+            }
+        });
+
+        this.addWindowListener (new OurWindowAdapter());
+
+        //ДО
+        childFrame= new Frame(); // Создать дочернюю форму
+        childFrame.setSize (800, 600); // с размером
+        childFrame.setLocation (450, 0);
+        childFrame.add(cnv);
+        childFrame.show(); // Перерисовать область клиента окна
+        childFrame.addWindowListener (new OurWindowAdapter());
     }
-    public void update(Observable o, Object arg) {
-        Ball ball = (Ball)arg;
-        System.out.println ("x= " + ball.thr.getName() + ball.x);
-        repaint();
-    }
-    public void paint (Graphics g) {
-        if (!LL.isEmpty()){
-            for (Object LL1 : LL) {
-                Ball ball = (Ball) LL1;
-                g.setColor(ball.col);
-                g.drawOval(ball.x, ball.y, 20, 20);
+
+    public void AddButFunc() {
+
+        if (IsInteger(numberTB.getText())) {	//проверка номера
+            int num = Integer.parseInt(numberTB.getText());
+            if (CheckNumbers(num)) {
+                if (IsInteger(speedTB.getText())) { //проверка скорости
+                    int speed = Integer.parseInt(speedTB.getText());
+                    if (CheckSpeed(speed)) {
+                        if (CheckColor(colorTB.getSelectedItem())) { //проверка цвета
+
+                            numbers[count] = num;
+                            count ++;
+                            objectChForChange.addItem(num + "");
+                            objectIdForChange.addItem(num + "");
+
+
+
+
+                            if (CheckFigure(figureTB.getSelectedItem())) {
+
+                                figures.get(count-1).start();
+                            }
+                            else {
+
+                                figures.get(count-1).start();
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-    public void itemStateChanged (ItemEvent iE) {}
-    public void actionPerformed (ActionEvent aE) {
-        String str = aE.getActionCommand();
-        if (str.equals ("OK")){
-            switch (c.getSelectedIndex()) {
-                case 0: col= Color.blue; break;
-                case 1: col= Color.green; break;
-                case 2: col= Color.red; break;
-                case 3: col= Color.black; break;
-                case 4: col= Color.yellow; break;
+
+    public void ChangeButFunc() {
+
+        if (IsInteger(objectChForChange.getSelectedItem())) { //проверка номера объекта
+            int num = Integer.parseInt(objectChForChange.getSelectedItem());
+
+            int foundNumber = -1;
+            for (int i = 0; i < count; i ++) { //поиск объекта
+                if (numbers[i] == num)
+                    foundNumber = i;
             }
-            Ball ball= new Ball(col, this.tf.getText());
-            LL.add(ball);
-            ball.addObserver(this);
-        }
-        repaint();
-    }
-}
-class Ball extends Observable implements Runnable {
-    Thread thr;
-    private boolean xplus;
-    private boolean yplus;
-    int x; int y;
-    Color col;
-    public Ball (Color col, String text) {
-        xplus = true; yplus = true;
-        x = 0; y = 30;
-        this.col = col;
-        Test.count++;
-        thr = new Thread(this,Test.count+":"+text+":");
-        thr.start();
-    }
-    public void run(){
-        while (true){
-            if(x==475) xplus = false;
-            if(x==-1) xplus = true;
-            if(y==175) yplus = false;
-            if(y==29) yplus = true;
-            if(xplus) x++; else x--;
-            if(yplus) y++; else y--;
-            setChanged();notifyObservers (this);
-            try{Thread.sleep (10);}
-            catch (InterruptedException e){}
+
+            figures.get(foundNumber).speed = Integer.parseInt(speedCh.getSelectedItem()); // изменение скорости
         }
     }
+
+    public void ChangeIdFunc() {
+
+        if (IsInteger(objectIdForChange.getSelectedItem())) { //проверка номера объекта
+            int num = Integer.parseInt(objectIdForChange.getSelectedItem());
+
+            int foundNumber = -1;
+            for (int i = 0; i < count; i ++) { //поиск объекта
+                if (numbers[i] == num)
+                    foundNumber = i;
+            }
+            objectChForChange.remove(objectIdForChange.getSelectedItem());
+            objectIdForChange.remove(objectIdForChange.getSelectedItem());
+            numbers[foundNumber] = Integer.parseInt(objectIdForChangeNew.getText());
+            figures.get(foundNumber).id = Integer.parseInt(objectIdForChangeNew.getText());
+            objectChForChange.addItem(objectIdForChangeNew.getText() + "");
+            objectIdForChange.addItem(objectIdForChangeNew.getText() + "");
+        }
+    }
+
+    public boolean IsInteger(String string) {
+        try {
+            Integer.parseInt(string);
+        }
+        catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean CheckNumbers(int num) {
+        for (int i = 0; i < count; i ++) {
+            if (numbers[i] == num)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean CheckSpeed (int speed) {
+        if ((speed == 1) || (speed == 2) || (speed == 3) || (speed == 4) || (speed == 5))
+            return true;
+        else
+            return false;
+    }
+
+    public boolean CheckFigure(String fgr) {
+        if (fgr.equalsIgnoreCase("круг")) {
+            figures.add(new Circle(this.cnv, color, Integer.parseInt(speedTB.getText()), Integer.parseInt(numberTB.getText())));
+        }
+        else if (fgr.equalsIgnoreCase("квадрат")) {
+            figures.add(new Quadrangle(this.cnv, color, Integer.parseInt(speedTB.getText()), Integer.parseInt(numberTB.getText())));
+        }
+        else
+            return false;
+
+        return true;
+    }
+
+    public boolean CheckColor(String clr) {
+        if (clr.equalsIgnoreCase("красный")) {
+            this.color = Color.red;
+        }
+        else if (clr.equalsIgnoreCase("оранжевый")) {
+            this.color = Color.orange;
+        }
+        else if (clr.equalsIgnoreCase("синий")) {
+            this.color = Color.blue;
+        }
+        else if (clr.equalsIgnoreCase("желтый")) {
+            this.color = Color.yellow;
+        }
+        else if (clr.equalsIgnoreCase("зеленый")) {
+            this.color = Color.green;
+        }
+        else if (clr.equalsIgnoreCase("белый")) {
+            this.color = Color.white;
+        }
+        else if (clr.equalsIgnoreCase("черный")) {
+            this.color = Color.black;
+        }
+        else
+            return false;
+
+        return true;
+    }
+
+    public static void main (String[] args) {
+        Frames Fr = new Frames();
+        Fr.show();
+    }
 }
-class WindowAdapter2 extends WindowAdapter {
-    public void windowClosing (WindowEvent wE) {System.exit (0);}
+
+
+
+abstract class Figure extends Thread{
+
+    Point point = new Point(50, 50);
+    Canvas cnv;
+    Graphics g;
+    Color color;
+    public int speed;
+    double angle;
+    int id;
+    int step = 4;
+    final  Random random = new Random();
+
+    void moveTo() {
+        this.show(false);
+        this.point.x += this.speed*Math.cos(this.angle)*step;
+        this.point.y += this.speed*Math.sin(this.angle)*step;
+        checkBorder();
+        this.show(true);
+    }
+
+    void show(boolean sh) {
+        //
+    }
+
+    void checkBorder() {
+        //
+    }
+
+    public void run() {
+        while(true) {
+            moveTo();
+            try {
+                sleep(150);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class Circle extends Figure{
+
+    int radius = 70;
+
+    void show(boolean sh) {
+        if (sh)
+            g.setColor(color);
+        else
+            g.setColor(Color.white);
+
+        g.fillOval(point.x, point.y, radius, radius);
+        g.drawString(this.id + "", point.x, point.y);
+    }
+
+    void checkBorder() {
+        boolean border = false;
+
+        if ((cnv.getWidth()-point.x <= this.radius) && (Math.cos(this.angle) > 0)) {
+            this.angle = Math.PI - this.angle;
+            border = true;
+        }
+        else if ((point.x <= 0) && (Math.cos(this.angle) < 0)) {
+            this.angle = Math.PI - this.angle;
+            border = true;
+        }
+
+        if ((cnv.getHeight()-point.y <= this.radius) && (Math.sin(this.angle) > 0)) {
+            this.angle *= (-1);
+            border = true;
+        }
+        else if ((point.y <= 0) && (Math.sin(this.angle) < 0)) {
+            this.angle *= (-1);
+            border = true;
+        }
+
+        if (border) {
+            this.point.x += this.speed*Math.cos(this.angle);
+            this.point.y += this.speed*Math.sin(this.angle);
+        }
+    }
+
+    Circle(Canvas cnv, Color color, int speed, int id) {
+        this.cnv = cnv;
+        this.color = color;
+        this.speed = speed;
+        this.angle = Math.random()*2*Math.PI;
+        this.g = cnv.getGraphics();
+        this.id = id;
+    }
+}
+class Quadrangle extends Figure{
+
+    int height = 70;
+
+    void show(boolean sh) {
+        if (sh)
+            g.setColor(color);
+        else
+            g.setColor(Color.white);
+
+        g.fillRect(point.x-height/2, point.y-height/2, height, height);
+        g.drawString(this.id + "", point.x-height/2-2, point.y-height/2-2);
+    }
+
+    void checkBorder() {
+        boolean border = false;
+
+        if ((cnv.getWidth()-point.x <= this.height/2) && (Math.cos(this.angle) > 0)) {
+            this.angle = Math.PI - this.angle;
+            border = true;
+        }
+        else if ((point.x <= this.height/2) && (Math.cos(this.angle) < 0)) {
+            this.angle = Math.PI - this.angle;
+            border = true;
+        }
+
+        if ((cnv.getHeight()-point.y <= this.height/2) && (Math.sin(this.angle) > 0)) {
+            this.angle *= (-1);
+            border = true;
+        }
+        else if ((point.y <= this.height/2) && (Math.sin(this.angle) < 0)) {
+            this.angle *= (-1);
+            border = true;
+        }
+
+        if (border) {
+            this.point.x += this.speed*Math.cos(this.angle);
+            this.point.y += this.speed*Math.sin(this.angle);
+        }
+    }
+
+    Quadrangle(Canvas cnv, Color color, int speed, int id) {
+        this.cnv = cnv;
+        this.color = color;
+        this.speed = speed;
+        this.angle = Math.random()*2*Math.PI;
+        this.g = cnv.getGraphics();
+        this.id = id;
+    }
 }
